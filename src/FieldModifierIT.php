@@ -10,13 +10,13 @@ interface FieldModifierIT {
 
 	public function getFormId(): int;
 
-	public function onRender(): void;
+	public function onRender(): array;
 
 	public function getArgs(): array;
 
 	public function getClass();
 
-	public function renderHandler( $args, $instance ): void;
+	public function renderHandler( $args, $instance ): array;
 
 	public function editorAssets(): void;
 

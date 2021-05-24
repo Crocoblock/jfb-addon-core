@@ -18,7 +18,7 @@ abstract class BaseFieldModifier implements FieldModifierIT {
 	}
 
 	public function on_plugin_init() {
-		add_action(
+		add_filter(
 			"jet-form-builder/render/{$this->type()}",
 			array( $this, 'renderHandler' ), 10, 2
 		);
