@@ -29,7 +29,7 @@ trait FieldModifierTrait {
 	}
 
 
-	public function editorAssets(): void {
+	public function editorAssets() {
 	}
 
 }

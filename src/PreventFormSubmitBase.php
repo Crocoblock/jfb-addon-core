@@ -57,7 +57,8 @@ abstract class PreventFormSubmitBase {
 	abstract public function prevent_process_reload_form( $handler );
 
 	public function manage_hooks() {
-		[ $handler, $action_name ] = $this->manage_hooks_data();
+		$handler = $this->manage_hooks_data()[0];
+		$action_name = $this->manage_hooks_data()[1];
 
 		if ( wp_doing_ajax() ) {
 			add_action(
@@ -79,7 +80,7 @@ abstract class PreventFormSubmitBase {
 	}
 
 	public function _prevent_ajax_submit() {
-		[ $handler ] = $this->manage_hooks_data();
+		$handler = $this->manage_hooks_data()[0];
 
 		$handler->is_ajax = true;
 		$handler->setup_form();
@@ -88,7 +89,7 @@ abstract class PreventFormSubmitBase {
 	}
 
 	public function _prevent_reload_submit() {
-		[ $handler ] = $this->manage_hooks_data();
+		$handler = $this->manage_hooks_data()[0];
 
 		$handler->setup_form();
 

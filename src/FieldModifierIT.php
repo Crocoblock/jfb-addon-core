@@ -18,7 +18,7 @@ interface FieldModifierIT {
 
 	public function renderHandler( $args, $instance ): array;
 
-	public function editorAssets(): void;
+	public function editorAssets();
 
 	public static function register();
 
