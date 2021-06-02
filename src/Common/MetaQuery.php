@@ -27,7 +27,16 @@ class MetaQuery {
 		}
 		$meta = get_post_meta( $post_id, $key, true );
 
-		return $meta ? json_decode( $meta, true, 512, JSON_INVALID_UTF8_IGNORE ) : array();
+		if ( $meta ) {
+			/** For compatibility with php 7.0.x */
+			if ( defined( 'JSON_INVALID_UTF8_IGNORE' ) ) {
+				return json_decode( $meta, true, 512, JSON_INVALID_UTF8_IGNORE );
+			}
+
+			return json_decode( $meta, true );
+		}
+
+		return array();
 	}
 
 	public static function set_json_meta( array $params ) {
