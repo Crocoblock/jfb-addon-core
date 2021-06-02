@@ -19,7 +19,8 @@ class MetaQuery {
 			'key' => ''
 		), $params );
 
-		[ 'id' => $post_id, 'key' => $key ] = $params;
+		$post_id = $params['id'];
+		$key     = $params['key'];
 
 		if ( ! $post_id ) {
 			$post_id = get_the_ID();
@@ -36,7 +37,9 @@ class MetaQuery {
 			'value' => array()
 		), $params );
 
-		[ 'id' => $post_id, 'key' => $key, 'value' => $value ] = $params;
+		$post_id = $params['id'];
+		$key     = $params['key'];
+		$value   = $params['value'];
 
 		if ( ! $post_id ) {
 			$post_id = get_the_ID();
