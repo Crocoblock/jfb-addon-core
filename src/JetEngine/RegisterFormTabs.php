@@ -10,8 +10,8 @@ trait RegisterFormTabs {
 
 	abstract public function tabs(): array;
 
-	public function can_init() {
-		return class_exists( 'Jet_Engine\\Modules\\Forms\\Tabs\\Tab_Manager' );
+	public function plugin_version_compare(): string {
+		return '2.8.3';
 	}
 
 	public function customize_init( $callable ) {
