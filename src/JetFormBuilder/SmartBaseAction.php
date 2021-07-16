@@ -90,4 +90,8 @@ abstract class SmartBaseAction extends Base {
 		);
 	}
 
+	public function debug( ...$additional ) {
+		new Action_Exception( 'debug', ...$additional );
+	}
+
 }
