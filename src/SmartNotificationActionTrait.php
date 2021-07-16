@@ -14,27 +14,80 @@ trait SmartNotificationActionTrait {
 
 	abstract public function run_action();
 
-	protected function getRequestData() {
-		return $this->_requestData;
-	}
+	abstract public function setRequest( $key, $value );
 
-	protected function getInstance() {
+	abstract public function hasGateway();
+
+	abstract public function getFormId();
+
+	abstract public function isAjax();
+
+	public function getInstance() {
 		return $this->_instance;
 	}
 
-	protected function getSettings() {
-		return $this->_settings;
-	}
-
-	protected function getSettingsWithGlobal() {
+	public function getSettingsWithGlobal() {
 		throw new BaseHandlerException( 'failed', __METHOD__ );
 	}
 
-	protected function getGlobalOptionName() {
+	public function getGlobalOptionName() {
 		return $this->get_id();
 	}
 
 	public function parseDynamicException( $type, $message ): string {
 		return $message;
 	}
+
+	public function getRequest( $key = '', $ifNotExist = false ) {
+		if ( ! $key ) {
+			return $this->_requestData;
+		}
+		return isset( $this->_requestData[ $key ] ) ? $this->_requestData[ $key ] : $ifNotExist;
+	}
+
+	public function issetRequest( $key ) {
+		return isset( $this->_requestData[ $key ] );
+	}
+
+	public function getSettings( $key = '', $ifNotExist = false ) {
+		if ( ! $key ) {
+			return $this->_settings;
+		}
+		return isset( $this->_settings[ $key ] ) ? $this->_settings[ $key ] : $ifNotExist;
+	}
+
+	/**
+	 * @param $message
+	 * @param mixed ...$additional
+	 *
+	 * @throws BaseHandlerException
+	 */
+	public function dynamicError( $message, ...$additional ) {
+		throw new BaseHandlerException( $message, 'error', ...$additional );
+	}
+
+	/**
+	 * @param $message
+	 * @param mixed ...$additional
+	 *
+	 * @throws BaseHandlerException
+	 */
+	public function dynamicSuccess( $message, ...$additional ) {
+		throw new BaseHandlerException( $message, 'success', ...$additional );
+	}
+
+	/**
+	 * @param $status
+	 * @param mixed ...$additional
+	 *
+	 * @throws BaseHandlerException
+	 */
+	public function error( $status, ...$additional ) {
+		throw new BaseHandlerException( $status, '', ...$additional );
+	}
+
+	public function debug( ...$additional ) {
+		new BaseHandlerException( 'debug', '', ...$additional );
+	}
+
 }

@@ -11,6 +11,25 @@ abstract class SmartBaseNotification extends BaseNotification {
 
 	use SmartNotificationActionTrait;
 
+	public function setRequest( $key, $value ) {
+		$this->getInstance()->data[ $key ]               = $value;
+		$this->getInstance()->handler->form_data[ $key ] = $value;
+
+		return $this;
+	}
+
+	public function hasGateway() {
+		return $this->getInstance()->handler->has_gateway();
+	}
+
+	public function getFormId() {
+		return $this->getInstance()->form;
+	}
+
+	public function isAjax() {
+		return $this->getInstance()->handler->is_ajax;
+	}
+
 	protected function getSettingsWithGlobal() {
 		$settings = $this->getSettings();
 
