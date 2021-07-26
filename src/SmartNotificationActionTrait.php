@@ -14,6 +14,8 @@ trait SmartNotificationActionTrait {
 
 	abstract public function run_action();
 
+	abstract public function provider_slug();
+
 	abstract public function setRequest( $key, $value );
 
 	abstract public function hasGateway();

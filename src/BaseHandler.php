@@ -9,7 +9,7 @@ use JFBCore\Exceptions\ApiHandlerException;
 abstract class BaseHandler {
 	protected $api_base_url = '';
 	protected $api_key = '';
-	protected $api_request_args = array();
+	protected $request_args = array();
 	public static $instance = null;
 
 	public static function instance() {
@@ -27,22 +27,50 @@ abstract class BaseHandler {
 		}
 	}
 
+	/**
+	 * @return array
+	 *
+	 * Example:
+	 * array(
+	 *      'arg_name' => array(
+	 *          'sanitize_func' => 'sanitize_text_field'
+	 *          'save_func'     => 'some_save_callback',
+	 *          'required'      => false
+	 *      )
+	 * )
+	 */
 	public function required_ajax_args() {
 		return array(
 			'api_key' => array(
 				'sanitize_func' => 'sanitize_text_field',
-				'save_func'     => array( $this, 'api_key' )
 			)
 		);
 	}
 
-	public function api_key( $api_key = '' ) {
-		if ( $api_key ) {
-			$this->api_key = $api_key;
+	public function get_arg( $arg_name = false, $if_not_exist = false ) {
+		if ( ! $arg_name ) {
+			return $this->request_args;
 		}
+
+		return isset( $this->request_args[ $arg_name ] ) ? $this->request_args[ $arg_name ] : $if_not_exist;
+	}
+
+	public function set_arg( $arg_name, $value ) {
+		$this->request_args[ $arg_name ] = $value;
 
 		return $this;
 	}
+
+	public function set_args_from( $source = array() ) {
+		$args_keys = array_keys( $this->required_ajax_args() );
+
+		foreach ( $args_keys as $args_key ) {
+			if ( isset( $source[ $args_key ] ) ) {
+				$this->set_arg( $args_key, $source[ $args_key ] );
+			}
+		}
+	}
+
 
 	abstract public function ajax_action(): string;
 
@@ -55,12 +83,20 @@ abstract class BaseHandler {
 	public function get_api_data() {
 		try {
 			foreach ( $this->required_ajax_args() as $ajax_arg => $options ) {
-				if ( empty( $_REQUEST[ $ajax_arg ] ) ) {
-					wp_send_json_error( "Empty {$ajax_arg}" );
+				if ( empty( $_REQUEST[ $ajax_arg ] ) && ! empty( $options['required'] ) ) {
+					wp_send_json_error( array( "Empty {$ajax_arg}", $options ) );
 				}
-				$value = call_user_func( $options['sanitize_func'], $_REQUEST[ $ajax_arg ] );
+				$value = isset( $_REQUEST[ $ajax_arg ] ) ? $_REQUEST[ $ajax_arg ] : '';
 
-				call_user_func( $options['save_func'], $value );
+				if ( isset( $options['sanitize_func'] ) && is_callable( $options['sanitize_func'] ) ) {
+					$value = call_user_func( $options['sanitize_func'], $value );
+				}
+
+				if ( isset( $options['save_func'] ) && is_callable( $options['save_func'] ) ) {
+					call_user_func( $options['save_func'], $value );
+				} else {
+					$this->request_args[ $ajax_arg ] = $value;
+				}
 			}
 			$this->filter_result();
 		} catch ( ApiHandlerException $exception ) {

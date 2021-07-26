@@ -11,6 +11,10 @@ abstract class SmartBaseNotification extends BaseNotification {
 
 	use SmartNotificationActionTrait;
 
+	public function provider_slug() {
+		return 'jef';
+	}
+
 	public function setRequest( $key, $value ) {
 		$this->getInstance()->data[ $key ]               = $value;
 		$this->getInstance()->handler->form_data[ $key ] = $value;

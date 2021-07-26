@@ -16,6 +16,10 @@ abstract class SmartBaseAction extends Base {
 
 	use SmartNotificationActionTrait;
 
+	public function provider_slug() {
+		return 'jfb';
+	}
+
 	public function setRequest( $key, $value ) {
 		$this->getInstance()->request_data[ $key ] = $value;
 
