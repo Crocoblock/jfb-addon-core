@@ -45,6 +45,10 @@ abstract class NotificationsManager {
 		$types = $this->register_notification();
 
 		foreach ( $types as $type ) {
+			if ( ! $type->dependence() ) {
+				continue;
+			}
+			
 			$this->notifications[ $type->get_id() ] = $type;
 
 			add_action(

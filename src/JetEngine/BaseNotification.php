@@ -14,6 +14,10 @@ abstract class BaseNotification {
 
 	abstract public function get_name();
 
+	public function dependence() {
+	    return true;
+    }
+
 	public function vue_component_props() {
 		return array(
 			':fields' => 'availableFields'
