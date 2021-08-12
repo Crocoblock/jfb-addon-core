@@ -23,13 +23,13 @@ trait RenderBlock {
 		return $this;
 	}
 
-	public function attributes_map() {
+	public function _preset_attributes_map() {
 		return array(
 			'class'           => array( 'jet-form-builder__field' ),
 			'required'        => $this->block_type->get_required_val(),
-			'name'            => $this->block_type->get_field_name( $this->get_arg( 'name' ) ),
+			'name'            => $this->block_type->get_field_name( $this->get_arg( 'name', 'field_name' ) ),
 			'id'              => $this->block_type->get_field_id( $this->args ),
-			'data-field-name' => $this->get_arg( 'name' ),
+			'data-field-name' => $this->get_arg( 'name', 'field_name' ),
 			'value'           => $this->get_arg( 'default' ),
 		);
 	}

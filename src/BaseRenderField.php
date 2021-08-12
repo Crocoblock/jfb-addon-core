@@ -7,7 +7,6 @@ namespace JFBCore;
 trait BaseRenderField {
 
 	public $args;
-	public $args_map;
 
 	abstract public function set_up( ...$args );
 
@@ -15,34 +14,28 @@ trait BaseRenderField {
 
 	/**
 	 * It used in JetFormBuilder Render\Base for naming field template
-	 * And in JetEngine & jetFormBuilder it used for naming wp.hook
+	 * And in JetEngine & JetFormBuilder it used for naming wp.hook
 	 *
 	 * @return string
 	 */
 	abstract public function get_name();
 
+	/**
+	 * It must be rewrite on client-level
+	 */
 	public function attributes_values() {
 		return array();
 	}
 
-	public function attributes_map() {
+	/**
+	 * Base function, it must rewrite on core-level
+	 */
+	public function _preset_attributes_map() {
 		return array();
 	}
 
-	public function args_map() {
-		return array();
-	}
-
-	private function default_args_map() {
-		$this->args_map = array_merge_recursive( array(
-			'required' => '',
-			'name'     => 'field_name',
-			'default'  => ''
-		), $this->args_map() );
-	}
-
-	final public function get_arg( $key ) {
-		return ( isset( $this->args[ $key ] ) ? $this->args[ $key ] : $this->args_map[ $key ] );
+	final public function get_arg( $key, $if_not_exist = '' ) {
+		return ( isset( $this->args[ $key ] ) ? $this->args[ $key ] : $if_not_exist );
 	}
 
 	private function save_attributes() {
@@ -54,23 +47,38 @@ trait BaseRenderField {
 	}
 
 	final public function get_attributes_map() {
-		return array_merge_recursive( $this->attributes_map(), $this->attributes_values() );
+		return array_merge_recursive( $this->_preset_attributes_map(), $this->attributes_values() );
 	}
 
-	final public function get_rendered() {
-		$this->default_args_map();
-		$this->save_attributes();
-
-		return $this->render_field( $this->get_attributes_string_save() );
-	}
-
-	public function get_args( $args_names ) {
+	public function get_args( $args_names = array() ) {
+		if ( ! $args_names ) {
+			return $this->args;
+		}
 		$response = array();
 
 		foreach ( $args_names as $args_name ) {
-			$response[ $args_name ] = $this->get_arg( $args_name );
+			if ( ! is_array( $args_name ) ) {
+				$response[ $args_name ] = $this->get_arg( $args_name );
+
+				continue;
+			}
+			list( $name, $if_not_exist ) = $args_name;
+
+			$response[ $name ] = $this->get_arg( $name, $if_not_exist );
 		}
 
 		return $response;
 	}
+
+	/**
+	 * Call this function to get rendered field template
+	 *
+	 * @return string
+	 */
+	final public function get_rendered() {
+		$this->save_attributes();
+
+		return $this->render_field( $this->get_attributes_string() );
+	}
+
 }
