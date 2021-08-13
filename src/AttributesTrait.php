@@ -60,4 +60,11 @@ trait AttributesTrait {
 		return $response;
 	}
 
+	public function get_attributes_string() {
+		$response = $this->get_attributes_string_save();
+		$this->attrs = array();
+
+		return $response;
+	}
+
 }
