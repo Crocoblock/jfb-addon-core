@@ -60,6 +60,10 @@ abstract class SmartBaseAction extends Base {
 		}
 	}
 
+	public function addResponse( $response_arr ) {
+		$this->getInstance()->add_response( $response_arr );
+	}
+
 	/**
 	 * @param array $request
 	 * @param Action_Handler $handler
@@ -85,13 +89,6 @@ abstract class SmartBaseAction extends Base {
 				...$exception->getAdditional()
 			);
 		}
-	}
-
-	protected function applyFilters( $suffix, ...$params ) {
-		return apply_filters(
-			"jet-form-builder/action/{$this->get_id()}/{$suffix}",
-			...$params
-		);
 	}
 
 	public function debug( ...$additional ) {

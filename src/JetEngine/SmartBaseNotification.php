@@ -46,6 +46,10 @@ abstract class SmartBaseNotification extends BaseNotification {
 		);
 	}
 
+	public function addResponse( $response_arr ) {
+		$this->getInstance()->handler->add_response_data( $response_arr );
+	}
+
 	/**
 	 * @inheritDoc
 	 */

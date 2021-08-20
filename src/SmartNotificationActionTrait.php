@@ -24,6 +24,8 @@ trait SmartNotificationActionTrait {
 
 	abstract public function isAjax();
 
+	abstract public function addResponse( $response_arr );
+
 	public function getInstance() {
 		return $this->_instance;
 	}
@@ -90,6 +92,13 @@ trait SmartNotificationActionTrait {
 
 	public function debug( ...$additional ) {
 		new BaseHandlerException( 'debug', '', ...$additional );
+	}
+
+	protected function applyFilters( $suffix, ...$params ) {
+		return apply_filters(
+			"jet-form-builder/action/{$this->get_id()}/{$suffix}",
+			...$params
+		);
 	}
 
 }
