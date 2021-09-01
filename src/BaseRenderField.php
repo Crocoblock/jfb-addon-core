@@ -8,7 +8,9 @@ trait BaseRenderField {
 
 	public $args;
 
-	abstract public function set_up( ...$args );
+	public function set_up() {
+		return $this;
+	}
 
 	abstract public function render_field( $attrs_string );
 
@@ -21,10 +23,99 @@ trait BaseRenderField {
 	abstract public function get_name();
 
 	/**
+	 * @param string $name
+	 */
+	abstract public function get_field_name( $name = '' );
+
+	abstract public function get_required_val();
+
+	abstract public function get_field_id();
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 */
+	abstract public function main_field_class();
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 *
+	 * @param $custom_label
+	 * @param $custom_mark
+	 */
+	abstract public function include_field_label( $custom_label = false, $custom_mark = false );
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 *
+	 * @param $custom_desc
+	 */
+	abstract public function include_field_desc( $custom_desc = false );
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 */
+	abstract public function include_layout_column();
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 */
+	abstract public function include_layout_row();
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 */
+	abstract public function get_layout_arg();
+
+	/**
+	 * Base function, it must rewrite on core-level
+	 *
+	 * @param $template
+	 *
+	 * @param array $additional
+	 *
+	 * @return false|string
+	 */
+	final public function include_layout( $template, $additional = array() ) {
+		$custom_label = $additional[0] ?? false;
+		$custom_desc  = $additional[1] ?? false;
+		$custom_mark  = $additional[2] ?? false;
+
+		$label = $this->include_field_label( $custom_label, $custom_mark );
+		$desc  = $this->include_field_desc( $custom_desc );
+
+		$layout = $this->get_layout_arg();
+
+		switch ( $layout ) {
+			case 'column':
+				ob_start();
+				include $this->include_layout_column();
+
+				return ob_get_clean();
+			case 'row':
+				ob_start();
+				include $this->include_layout_row();
+
+				return ob_get_clean();
+			default:
+				ob_start();
+				include $this->include_layout_custom();
+
+				return ob_get_clean();
+		}
+	}
+
+	/**
 	 * It must be rewrite on client-level
 	 */
 	public function attributes_values() {
 		return array();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function include_layout_custom() {
+		return $this->include_layout_column();
 	}
 
 	/**
@@ -79,6 +170,10 @@ trait BaseRenderField {
 		$this->save_attributes();
 
 		return $this->render_field( $this->get_attributes_string() );
+	}
+
+	public function complete_render() {
+		return $this->get_rendered();
 	}
 
 }
