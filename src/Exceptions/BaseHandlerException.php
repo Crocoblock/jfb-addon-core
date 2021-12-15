@@ -20,6 +20,12 @@ class BaseHandlerException extends \Exception {
 		return $this->additional_data;
 	}
 
+	public function set_code( $code ) {
+		$this->code = $code;
+
+		return $this;
+	}
+
 	public function type() {
 		return $this->type;
 	}
