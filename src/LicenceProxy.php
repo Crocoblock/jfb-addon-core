@@ -18,6 +18,7 @@ class LicenceProxy {
 		if ( ! is_admin() ) {
 			return;
 		}
+		require_once __DIR__ . DIRECTORY_SEPARATOR . 'JFB_License_Manager.php';
 
 		\JFB_License_Manager::instance();
 	}
