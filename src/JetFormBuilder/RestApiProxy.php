@@ -11,7 +11,7 @@ abstract class RestApiProxy {
 	abstract public function routes(): array;
 
 	public function plugin_version_compare(): string {
-		return '1.5.0';
+		return '2.0.0';
 	}
 
 	protected function get_controller_instance() {
