@@ -22,4 +22,10 @@ class LicenceProxy {
 
 		\JFB_License_Manager::instance();
 	}
+
+	public function on_base_need_install() {
+	}
+
+	public function on_base_need_update() {
+	}
 }
