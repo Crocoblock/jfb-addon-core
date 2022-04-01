@@ -4,7 +4,7 @@
 namespace JFBCore\JetFormBuilder;
 
 
-abstract class AdminPagesProxy {
+abstract class AdminSinglePagesProxy {
 
 	use WithInit;
 
@@ -16,7 +16,7 @@ abstract class AdminPagesProxy {
 
 	public function on_plugin_init() {
 		add_filter(
-			'jet-form-builder/admin/pages',
+			'jet-form-builder/admin/single-pages',
 			array( $this, 'register_pages' )
 		);
 	}

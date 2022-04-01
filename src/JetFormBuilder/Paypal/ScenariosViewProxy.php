@@ -13,7 +13,7 @@ abstract class ScenariosViewProxy {
 	abstract public function scenarios(): array;
 
 	public function plugin_version_compare(): string {
-		return '1.5.0';
+		return '2.0.0';
 	}
 
 	public function on_plugin_init() {
