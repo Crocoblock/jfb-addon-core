@@ -10,8 +10,12 @@ abstract class RestApiProxy {
 
 	abstract public function routes(): array;
 
+	public function get_priority(): int {
+		return 20;
+	}
+
 	public function plugin_version_compare(): string {
-		return '2.0.0';
+		return '2.1.0';
 	}
 
 	protected function get_controller_instance() {
@@ -32,7 +36,13 @@ abstract class RestApiProxy {
 	}
 
 	public function on_plugin_init() {
-		$this->get_controller_instance()->set_static( $this->routes() )->rest_api_init();
+		$controller = $this->get_controller_instance()->set_static( $this->routes() );
+
+		add_action(
+			'rest_api_init',
+			array( $controller, 'register_routes' ),
+			$this->get_priority()
+		);
 	}
 
 
