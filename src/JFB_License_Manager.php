@@ -496,7 +496,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 			} elseif ( $skin->get_errors()->get_error_code() ) {
 				wp_send_json( [
 					'success'  => false,
-					'message' => $skin->get_error_message(),
+					'message' => $skin->get_error_messages(),
 					'data'    => [],
 					'debug'   => $upgrade_messages,
 				] );
