@@ -7,19 +7,10 @@ namespace JFBCore;
 use JFBCore\Exceptions\ApiHandlerException;
 
 abstract class BaseHandler {
+	
 	protected $api_base_url = '';
-	protected $api_key = '';
+	protected $api_key      = '';
 	protected $request_args = array();
-	public static $instance = null;
-
-	public static function instance() {
-		if ( is_null( self::$instance ) ) {
-			self::$instance = new static();
-		}
-
-		return self::$instance;
-	}
-
 
 	private function __construct() {
 		if ( wp_doing_ajax() && ! empty( $this->ajax_action() ) ) {
