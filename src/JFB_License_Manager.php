@@ -12,24 +12,27 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 	class JFB_License_Manager {
 
 		/**
-		 * @var
+		 * @var self
 		 */
 		private static $instance;
 
 		/**
 		 * [$api_url description]
+		 *
 		 * @var string
 		 */
 		public $api_url = 'https://account.jetformbuilder.com';
 
 		/**
 		 * [$license_data_key description]
+		 *
 		 * @var string
 		 */
 		public $license_data_key = 'jfb-license-data';
 
 		/**
 		 * [$settings description]
+		 *
 		 * @var null
 		 */
 		public $license_data = null;
@@ -53,16 +56,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 * @return void
 		 */
 		public function license_action() {
-
-			$data = ( ! empty( $_POST['data'] ) ) ? \Jet_Form_Builder\Classes\Tools::maybe_recursive_sanitize( $_POST['data'] ) : false;
-
-			if ( ! $data ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
-					'data'    => [],
-				] );
-			}
+			$data = $this->resolve_request();
 
 			$license_action = $data['action'];
 			$license_key    = $data['license'];
@@ -76,35 +70,44 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 			if ( ! $responce_data['success'] ) {
 
 				if ( 'invalid' === $responce_data['license'] ) {
-					wp_send_json( [
-						'success'  => false,
-						'message' => __( 'Invalid license key', 'jet-form-builder' ),
-						'data'    => [],
-					] );
+					wp_send_json(
+						array(
+							'success' => false,
+							'message' => __( 'Invalid license key', 'jet-form-builder' ),
+							'data'    => array(),
+						)
+					);
 				}
 
 				if ( 'failed' === $responce_data['license'] ) {
 
 					$license_list = $this->get_license_data();
 
-					$license_list = array_filter( $license_list, function ( $license_data ) use ( $license_key ) {
-						return $license_data['license_key'] !== $license_key;
-					} );
+					$license_list = array_filter(
+						$license_list,
+						function ( $license_data ) use ( $license_key ) {
+							return $license_data['license_key'] !== $license_key;
+						}
+					);
 
 					update_option( $this->license_data_key, $license_list );
 
-					wp_send_json( [
-						'success'  => true,
-						'message' => __( 'The license for this site is already activated', 'jet-form-builder' ),
-						'data'    => [],
-					] );
+					wp_send_json(
+						array(
+							'success' => true,
+							'message' => __( 'The license for this site is already activated', 'jet-form-builder' ),
+							'data'    => array(),
+						)
+					);
 				}
 
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
 			}
 
 			switch ( $license_action ) {
@@ -113,37 +116,46 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 					$responce_data['license_key'] = $license_key;
 
-					wp_send_json( [
-						'success' => true,
-						'message' => __( 'The license has been successfully activated', 'jet-form-builder' ),
-						'data'    => $responce_data,
-					] );
+					wp_send_json(
+						array(
+							'success' => true,
+							'message' => __( 'The license has been successfully activated', 'jet-form-builder' ),
+							'data'    => $responce_data,
+						)
+					);
 
 					break;
 
 				case 'deactivate_license':
 					$license_list = $this->get_license_data();
 
-					$license_list = array_filter( $license_list, function ( $license_data ) use ( $license_key ) {
-						return $license_data['license_key'] !== $license_key;
-					} );
+					$license_list = array_filter(
+						$license_list,
+						function ( $license_data ) use ( $license_key ) {
+							return $license_data['license_key'] !== $license_key;
+						}
+					);
 
 					update_option( $this->license_data_key, $license_list );
 
-					wp_send_json( [
-						'success' => true,
-						'message' => __( 'The license has been successfully deactivated', 'jet-form-builder' ),
-						'data'    => $responce_data,
-					] );
+					wp_send_json(
+						array(
+							'success' => true,
+							'message' => __( 'The license has been successfully deactivated', 'jet-form-builder' ),
+							'data'    => $responce_data,
+						)
+					);
 
 					break;
 			}
 
-			wp_send_json( [
-				'success'  => false,
-				'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
-				'data'    => [],
-			] );
+			wp_send_json(
+				array(
+					'success' => false,
+					'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
+					'data'    => array(),
+				)
+			);
 		}
 
 		/**
@@ -164,11 +176,16 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 				$this->api_url
 			);
 
-			$response = wp_remote_get( $query_url, array(
-				'timeout' => 60,
-			) );
+			$response = wp_remote_get(
+				$query_url,
+				array(
+					'timeout' => 60,
+				)
+			);
 
-			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) != '200' ) {
+			if ( is_wp_error( $response ) ||
+				( (int) wp_remote_retrieve_response_code( $response ) ) !== 200
+			) {
 				return false;
 			}
 
@@ -177,6 +194,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 		/**
 		 * [get description]
+		 *
 		 * @param  [type]  $setting [description]
 		 * @param  boolean $default [description]
 		 * @return [type]           [description]
@@ -184,7 +202,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		public function get_license_data() {
 
 			if ( null === $this->license_data ) {
-				$this->license_data = get_option( $this->license_data_key, [] );
+				$this->license_data = get_option( $this->license_data_key, array() );
 			}
 
 			return $this->license_data;
@@ -192,16 +210,17 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 		/**
 		 * [set_license_data description]
+		 *
 		 * @param [type]  $setting [description]
 		 * @param boolean $value   [description]
 		 */
-		public function add_license_data( $license_key = false, $license_data = [] ) {
+		public function add_license_data( $license_key = false, $license_data = array() ) {
 
 			if ( ! $license_key ) {
-				return false;
+				return;
 			}
 
-			$current_license_data = get_option( $this->license_data_key, [] );
+			$current_license_data = get_option( $this->license_data_key, array() );
 
 			$license_data['license_key'] = $license_key;
 
@@ -212,6 +231,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 		/**
 		 * [get_plugin_license_key description]
+		 *
 		 * @param  boolean $setting [description]
 		 * @param  boolean $value   [description]
 		 * @return [type]           [description]
@@ -236,7 +256,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 						continue;
 					}
 
-					if (  'valid' === $license_data['license'] ) {
+					if ( 'valid' === $license_data['license'] ) {
 						return $license_data['license_key'];
 					}
 				}
@@ -247,14 +267,15 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 		/**
 		 * [if_license_expire_check description]
+		 *
 		 * @param  boolean $expire_date [description]
 		 * @return [type]               [description]
 		 */
 		public function license_expired_check( $expire_date = false, $day_to_expire = 0 ) {
 
 			if ( '0000-00-00 00:00:00' === $expire_date
-			     || '1000-01-01 00:00:00' === $expire_date
-			     || 'lifetime' === $expire_date
+				|| '1000-01-01 00:00:00' === $expire_date
+				|| 'lifetime' === $expire_date
 			) {
 				return false;
 			}
@@ -276,12 +297,11 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 * @return array|string|string[]
 		 */
 		public function get_site_url() {
-			$urlParts = parse_url( site_url( '/' ) );
-			$site_url = $urlParts['host'] . $urlParts['path'];
-			$site_url = preg_replace( '#^https?://#', '', rtrim( $site_url ) );
-			$site_url = str_replace( 'www.', '', $site_url );
+			$url_parts = parse_url( site_url( '/' ) );
+			$site_url  = $url_parts['host'] . $url_parts['path'];
+			$site_url  = preg_replace( '#^https?://#', '', rtrim( $site_url ) );
 
-			return $site_url;
+			return str_replace( 'www.', '', $site_url );
 		}
 
 		/**
@@ -316,59 +336,40 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 * @return string
 		 */
 		public function get_addon_slug_by_filename( $addon_filename = false ) {
-			return explode('/', $addon_filename )[0];
+			return explode( '/', $addon_filename )[0];
 		}
 
-		/**
-		 *
-		 */
 		public function addon_install_action() {
-
-			$data = ( ! empty( $_POST['data'] ) ) ? \Jet_Form_Builder\Classes\Tools::maybe_recursive_sanitize( $_POST['data'] ) : false;
-
-			if ( ! $data ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
-					'data'    => [],
-				] );
-			}
+			$data = $this->resolve_request();
 
 			$plugin = $data['plugin'];
 
 			$this->install_plugin( $plugin );
 
-			wp_send_json( [
-				'success' => true,
-				'message' => __( 'Success', 'jet-form-builder' ),
-				'data'    => [],
-			] );
+			wp_send_json(
+				array(
+					'success' => true,
+					'message' => __( 'Success', 'jet-form-builder' ),
+					'data'    => array(),
+				)
+			);
 		}
 
-		/**
-		 *
-		 */
+
 		public function addon_update_action() {
-
-			$data = ( ! empty( $_POST['data'] ) ) ? \Jet_Form_Builder\Classes\Tools::maybe_recursive_sanitize( $_POST['data'] ) : false;
-
-			if ( ! $data ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
-					'data'    => [],
-				] );
-			}
+			$data = $this->resolve_request();
 
 			$plugin = $data['plugin'];
 
 			$this->update_plugin( $plugin );
 
-			wp_send_json( [
-				'success' => true,
-				'message' => __( 'Success', 'jet-form-builder' ),
-				'data'    => [],
-			] );
+			wp_send_json(
+				array(
+					'success' => true,
+					'message' => __( 'Success', 'jet-form-builder' ),
+					'data'    => array(),
+				)
+			);
 		}
 
 		/**
@@ -377,14 +378,16 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 */
 		public function install_plugin( $plugin_file, $plugin_url = false ) {
 
-			$status = [];
+			$status = array();
 
 			if ( ! current_user_can( 'install_plugins' ) ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Sorry, you are not allowed to install plugins on this site.', 'jet-form-builder' ),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Sorry, you are not allowed to install plugins on this site.', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
 			}
 
 			if ( ! $plugin_url ) {
@@ -393,7 +396,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 				$package = $plugin_url;
 			}
 
-			include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
+			include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 			$skin     = new \WP_Ajax_Upgrader_Skin();
 			$upgrader = new \Plugin_Upgrader( $skin );
@@ -403,28 +406,34 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 				$status['errorCode']    = $result->get_error_code();
 				$status['errorMessage'] = $result->get_error_message();
 
-				wp_send_json( [
-					'success' => false,
-					'message' => $result->get_error_message(),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $result->get_error_message(),
+						'data'    => array(),
+					)
+				);
 			} elseif ( is_wp_error( $skin->result ) ) {
 				$status['errorCode']    = $skin->result->get_error_code();
 				$status['errorMessage'] = $skin->result->get_error_message();
 
-				wp_send_json( [
-					'success' => false,
-					'message' => $skin->result->get_error_message(),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $skin->result->get_error_message(),
+						'data'    => array(),
+					)
+				);
 			} elseif ( $skin->get_errors()->get_error_code() ) {
 				$status['errorMessage'] = $skin->get_error_messages();
 
-				wp_send_json( [
-					'success' => false,
-					'message' => $skin->get_error_messages(),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $skin->get_error_messages(),
+						'data'    => array(),
+					)
+				);
 			} elseif ( is_null( $result ) ) {
 				global $wp_filesystem;
 
@@ -435,18 +444,22 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 					$status['errorMessage'] = esc_html( $wp_filesystem->errors->get_error_message() );
 				}
 
-				wp_send_json( [
-					'success' => false,
-					'message' => $status['errorMessage'],
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $status['errorMessage'],
+						'data'    => array(),
+					)
+				);
 			}
 
-			wp_send_json( [
-				'success' => true,
-				'message' => __( 'The addon has been Installed', 'jet-form-builder' ),
-				'data'    => \Jet_Form_Builder\Plugin::instance()->addons_manager->get_addon_data( $plugin_file ),
-			] );
+			wp_send_json(
+				array(
+					'success' => true,
+					'message' => __( 'The addon has been Installed', 'jet-form-builder' ),
+					'data'    => \Jet_Form_Builder\Plugin::instance()->addons_manager->get_addon_data( $plugin_file ),
+				)
+			);
 		}
 
 		/**
@@ -457,49 +470,55 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 			$plugin = plugin_basename( sanitize_text_field( wp_unslash( $plugin_file ) ) );
 			$slug   = dirname( $plugin );
 
-			$status = [
+			$status = array(
 				'update'     => 'plugin',
 				'slug'       => $slug,
 				'oldVersion' => '',
 				'newVersion' => '',
-			];
+			);
 
 			if ( ! current_user_can( 'update_plugins' ) || 0 !== validate_file( $plugin ) ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => __( 'Sorry, you are not allowed to update plugins on this site.', 'jet-form-builder' ),
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Sorry, you are not allowed to update plugins on this site.', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
 			}
 
-			include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
+			include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 			wp_update_plugins();
 
 			$skin     = new \WP_Ajax_Upgrader_Skin();
 			$upgrader = new \Plugin_Upgrader( $skin );
-			$result   = $upgrader->bulk_upgrade( [ $plugin ] );
+			$result   = $upgrader->bulk_upgrade( array( $plugin ) );
 
-			$upgrade_messages = [];
+			$upgrade_messages = array();
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				$upgrade_messages = $skin->get_upgrade_messages();
 			}
 
 			if ( is_wp_error( $skin->result ) ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => $skin->result->get_error_message(),
-					'data'    => [],
-					'debug'   => $upgrade_messages,
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $skin->result->get_error_message(),
+						'data'    => array(),
+						'debug'   => $upgrade_messages,
+					)
+				);
 			} elseif ( $skin->get_errors()->get_error_code() ) {
-				wp_send_json( [
-					'success'  => false,
-					'message' => $skin->get_error_messages(),
-					'data'    => [],
-					'debug'   => $upgrade_messages,
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $skin->get_error_messages(),
+						'data'    => array(),
+						'debug'   => $upgrade_messages,
+					)
+				);
 
 			} elseif ( is_array( $result ) && ! empty( $result[ $plugin ] ) ) {
 				$plugin_update_data = current( $result );
@@ -513,19 +532,23 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 				 * For now, surface some sort of error here.
 				 */
 				if ( true === $plugin_update_data ) {
-					wp_send_json( [
-						'success' => false,
-						'message' => __( 'Addon update failed.', 'jet-form-builder' ),
-						'data'    => [],
-						'debug'   => $upgrade_messages,
-					] );
+					wp_send_json(
+						array(
+							'success' => false,
+							'message' => __( 'Addon update failed.', 'jet-form-builder' ),
+							'data'    => array(),
+							'debug'   => $upgrade_messages,
+						)
+					);
 				}
 
-				wp_send_json( [
-					'success' => true,
-					'message' => __( 'The addon has been updated', 'jet-form-builder' ),
-					'data'    => \Jet_Form_Builder\Plugin::instance()->addons_manager->get_addon_data( $plugin_file ),
-				] );
+				wp_send_json(
+					array(
+						'success' => true,
+						'message' => __( 'The addon has been updated', 'jet-form-builder' ),
+						'data'    => \Jet_Form_Builder\Plugin::instance()->addons_manager->get_addon_data( $plugin_file ),
+					)
+				);
 
 			} elseif ( false === $result ) {
 				global $wp_filesystem;
@@ -537,18 +560,22 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 					$errorMessage = esc_html( $wp_filesystem->errors->get_error_message() );
 				}
 
-				wp_send_json( [
-					'success' => false,
-					'message' => $errorMessage,
-					'data'    => [],
-				] );
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => $errorMessage,
+						'data'    => array(),
+					)
+				);
 			}
 
-			wp_send_json( [
-				'success' => false,
-				'message' => __( 'Plugin update failed.', 'jet-form-builder' ),
-				'data'    => [],
-			] );
+			wp_send_json(
+				array(
+					'success' => false,
+					'message' => __( 'Plugin update failed.', 'jet-form-builder' ),
+					'data'    => array(),
+				)
+			);
 		}
 
 		/**
@@ -564,7 +591,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 			foreach ( $available_addons_data as $key => $addon_info ) {
 
-				$addon_slug = $addon_info['slug'];
+				$addon_slug             = $addon_info['slug'];
 				$installed_user_plugins = \Jet_Form_Builder\Plugin::instance()->addons_manager->get_user_plugins();
 
 				if ( ! isset( $installed_user_plugins[ $addon_slug ] ) ) {
@@ -580,7 +607,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 					delete_site_transient( $plugin_slug . '_addon_info_data' );
 
-					$update = new \stdClass();
+					$update              = new \stdClass();
 					$update->slug        = $plugin_slug;
 					$update->plugin      = $plugin_file;
 					$update->new_version = true;
@@ -602,7 +629,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 */
 		public function modify_addons_page_localize_data( $data ) {
 			$data['licenseMode'] = true;
-			$data['licenseKey'] = $this->get_license_key();
+			$data['licenseKey']  = $this->get_license_key();
 			$data['licenseList'] = $this->get_license_data();
 
 			return $data;
@@ -623,10 +650,37 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 			add_filter( 'jfb-addons-page/license-mode', '__return_true' );
 
-			add_filter( 'jfb-addons-page/page-localize-data', array( $this, 'modify_addons_page_localize_data' )  );
+			add_filter( 'jfb-addons-page/page-localize-data', array( $this, 'modify_addons_page_localize_data' ) );
+		}
 
+		private function resolve_request(): array {
+			if ( ! wp_verify_nonce(
+				sanitize_key( $_POST['nonce'] ?? '' ),
+				\Jet_Form_Builder\Addons\Manager::NONCE_ACTION
+			) ) {
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
+					)
+				);
+			}
+
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$data = ( ! empty( $_POST['data'] ) ) ? \Jet_Form_Builder\Classes\Tools::maybe_recursive_sanitize( $_POST['data'] ) : false;
+
+			if ( ! $data ) {
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Server error. Please, try again later', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
+			}
+
+			return $data;
 		}
 
 	}
 }
-
