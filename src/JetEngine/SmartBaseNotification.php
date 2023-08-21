@@ -3,7 +3,6 @@
 
 namespace JFBCore\JetEngine;
 
-
 use JFBCore\Exceptions\BaseHandlerException;
 use JFBCore\SmartNotificationActionTrait;
 
@@ -34,7 +33,7 @@ abstract class SmartBaseNotification extends BaseNotification {
 		return $this->getInstance()->handler->is_ajax;
 	}
 
-	protected function getSettingsWithGlobal() {
+	public function getSettingsWithGlobal() {
 		$settings = $this->getSettings();
 
 		if ( empty( $settings ) ) {
@@ -42,7 +41,8 @@ abstract class SmartBaseNotification extends BaseNotification {
 		}
 
 		return $this->getInstance()->get_settings_with_global(
-			$settings, $this->getGlobalOptionName()
+			$settings,
+			$this->getGlobalOptionName()
 		);
 	}
 

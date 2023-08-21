@@ -3,7 +3,6 @@
 
 namespace JFBCore\JetFormBuilder;
 
-
 use Jet_Form_Builder\Actions\Action_Handler;
 use Jet_Form_Builder\Actions\Types\Base;
 use Jet_Form_Builder\Exceptions\Action_Exception;
@@ -38,11 +37,11 @@ abstract class SmartBaseAction extends Base {
 		return $this->getInstance()->request_data['__is_ajax'];
 	}
 
-	protected function getGlobalSettingsKeys() {
+	public function getGlobalSettingsKeys() {
 		return array();
 	}
 
-	protected function getSettingsWithGlobal() {
+	public function getSettingsWithGlobal() {
 		return array_merge(
 			$this->getSettings(),
 			$this->global_settings( $this->getGlobalSettingsKeys() )
