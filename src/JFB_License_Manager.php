@@ -610,7 +610,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 					$update              = new \stdClass();
 					$update->slug        = $plugin_slug;
 					$update->plugin      = $plugin_file;
-					$update->new_version = true;
+					$update->new_version = $addon_info['version'];
 					$update->url         = false;
 					$update->package     = $this->package_url( $plugin_file );
 
