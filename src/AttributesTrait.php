@@ -51,10 +51,14 @@ trait AttributesTrait {
 	public function get_attributes_string_save() {
 		$response = '';
 		foreach ( $this->attrs as $attr => $value ) {
+			// Skip names that could break out of the tag (Alpine/Vue names like @change, x-on:input stay valid).
+			if ( ! is_string( $attr ) || ! preg_match( '/^[A-Za-z_:@][A-Za-z0-9_:@.\-]*$/', $attr ) ) {
+				continue;
+			}
 			if ( is_array( $value ) ) {
 				$value = implode( ' ', $value );
 			}
-			$response .= sprintf( ' %1$s="%2$s"', $attr, $value );
+			$response .= sprintf( ' %1$s="%2$s"', $attr, esc_attr( (string) $value ) );
 		}
 
 		return $response;

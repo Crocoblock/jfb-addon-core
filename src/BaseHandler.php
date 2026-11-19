@@ -71,7 +71,73 @@ abstract class BaseHandler {
 		return array();
 	}
 
+	/**
+	 * Who may call the editor AJAX of this handler. It works with the site-wide
+	 * API key, so it is limited to form editors (JetFormBuilder) and admins (JetEngine).
+	 *
+	 * Filter `jfb-addon-core/handler/can-request` lets a site allow its own role.
+	 *
+	 * @return bool
+	 */
+	public function current_user_can_request(): bool {
+		// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		$form_capability = apply_filters( 'jet-form-builder/capability/form', 'manage_options' );
+
+		$can = current_user_can( 'edit_jet_fb_forms' )
+			|| current_user_can( $form_capability )
+			|| current_user_can( 'manage_options' );
+
+		// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+		return (bool) apply_filters( 'jfb-addon-core/handler/can-request', $can, $this );
+	}
+
+	/**
+	 * Return true once the addon's editor JS sends `_nonce` (see create_nonce()).
+	 * Kept opt-in so addons rebuilt with this library but not yet with updated JS
+	 * keep working; the capability check above applies to all of them.
+	 *
+	 * @return bool
+	 */
+	public function requires_nonce(): bool {
+		return false;
+	}
+
+	public function nonce_action(): string {
+		return 'jfb-addon-handler-' . $this->ajax_action();
+	}
+
+	/**
+	 * Nonce for the editor JS: send it as `_nonce` with the AJAX request.
+	 *
+	 * @return string
+	 */
+	public function create_nonce(): string {
+		return wp_create_nonce( $this->nonce_action() );
+	}
+
+	protected function verify_request() {
+		if ( ! $this->current_user_can_request() ) {
+			wp_send_json_error(
+				array( 'message' => __( 'You are not allowed to perform this request.', 'jet-form-builder' ) )
+			);
+		}
+
+		if ( ! $this->requires_nonce() ) {
+			return;
+		}
+
+		$nonce = sanitize_key( wp_unslash( $_REQUEST['_nonce'] ?? '' ) );
+
+		if ( ! wp_verify_nonce( $nonce, $this->nonce_action() ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'The page is outdated. Please, reload it and try again.', 'jet-form-builder' ) )
+			);
+		}
+	}
+
 	public function get_api_data() {
+		$this->verify_request();
+
 		try {
 			foreach ( $this->required_ajax_args() as $ajax_arg => $options ) {
 				if ( empty( $_REQUEST[ $ajax_arg ] ) && ! empty( $options['required'] ) ) {
