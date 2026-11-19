@@ -31,6 +31,7 @@ trait RenderBlock {
 			'id'              => $this->get_field_id(),
 			'data-field-name' => $this->get_arg( 'name', 'field_name' ),
 			'value'           => $this->get_arg( 'default' ),
+			'data-value'      => $this->get_arg( 'data-value' ),
 		);
 	}
 

@@ -56,13 +56,21 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		 * @return void
 		 */
 		public function license_action() {
-			$data = $this->resolve_request();
+			$data = $this->resolve_request( 'manage_options' );
 
-			$license_action = $data['action'];
-			$license_key    = $data['license'];
+			$license_action = $data['action'] ?? '';
+			$license_key    = $data['license'] ?? '';
 
+			// The Addons page always sends the key. Never fall back to the stored key:
+			// it let any caller act on (and read back) the site's license.
 			if ( empty( $license_key ) ) {
-				$license_key = $this->get_license_key();
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Please, enter the license key', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
 			}
 
 			$responce_data = $this->license_action_query( $license_action, $license_key );
@@ -340,7 +348,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 		}
 
 		public function addon_install_action() {
-			$data = $this->resolve_request();
+			$data = $this->resolve_request( 'install_plugins' );
 
 			$plugin = $data['plugin'];
 
@@ -357,7 +365,7 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 
 
 		public function addon_update_action() {
-			$data = $this->resolve_request();
+			$data = $this->resolve_request( 'update_plugins' );
 
 			$plugin = $data['plugin'];
 
@@ -653,8 +661,31 @@ if ( ! class_exists( 'JFB_License_Manager' ) ) {
 			add_filter( 'jfb-addons-page/page-localize-data', array( $this, 'modify_addons_page_localize_data' ) );
 		}
 
-		private function resolve_request(): array {
-			if ( ! wp_verify_nonce(
+		/**
+		 * Capability first, then the Addons page nonce.
+		 *
+		 * JetFormBuilder < 3.1.8 has no Addons page nonce: there only the capability
+		 * is checked, so the license keeps working on old cores (CSRF stays open there).
+		 *
+		 * @param string $capability Capability required for the action.
+		 *
+		 * @return array
+		 */
+		private function resolve_request( string $capability ): array {
+			if ( ! current_user_can( $capability ) ) {
+				wp_send_json(
+					array(
+						'success' => false,
+						'message' => __( 'Sorry, you are not allowed to do this.', 'jet-form-builder' ),
+						'data'    => array(),
+					)
+				);
+			}
+
+			$has_page_nonce = class_exists( '\Jet_Form_Builder\Addons\Manager' )
+				&& defined( '\Jet_Form_Builder\Addons\Manager::NONCE_ACTION' );
+
+			if ( $has_page_nonce && ! wp_verify_nonce(
 				sanitize_key( $_POST['nonce'] ?? '' ),
 				\Jet_Form_Builder\Addons\Manager::NONCE_ACTION
 			) ) {
